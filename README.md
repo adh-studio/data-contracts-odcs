@@ -51,8 +51,11 @@ un pipeline d'orchestration (Airflow, dbt, n8n) ou en CI.
 
 ## Installation
 
+Prerequis : Python 3.11, 3.12 ou 3.13 (versions validees pour les dependances
+epinglees, notamment pandas 2.2.3).
+
 ```bash
-python3 -m venv .venv && source .venv/bin/activate
+python3.13 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
