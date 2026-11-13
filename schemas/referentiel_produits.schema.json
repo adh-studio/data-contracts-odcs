@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:datacontract:offre-supply:referentiel-produits:schema",
+  "title": "Fiche produit du referentiel",
+  "description": "Validation technique d'une ligne du flux referentiel_produits, equivalent JSON Schema du contrat ODCS.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "sku",
+    "libelle",
+    "famille",
+    "prix_vente_eur",
+    "eco_participation_eur",
+    "pays_origine",
+    "poids_kg",
+    "date_maj"
+  ],
+  "properties": {
+    "sku": {
+      "type": "string",
+      "pattern": "^(CAN|LUM|VAI|TAP|RAN)-[0-9]{5}$",
+      "description": "Reference produit interne, cle primaire."
+    },
+    "libelle": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 120,
+      "description": "Libelle commercial du produit."
+    },
+    "famille": {
+      "type": "string",
+      "enum": ["canapes", "luminaires", "vaisselle", "tapis", "rangement"],
+      "description": "Famille marchandise."
+    },
+    "prix_vente_eur": {
+      "type": "number",
+      "minimum": 0.01,
+      "maximum": 20000,
+      "description": "Prix de vente public conseille en euros TTC."
+    },
+    "eco_participation_eur": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 200,
+      "description": "Montant de l'eco-participation mobilier."
+    },
+    "pays_origine": {
+      "type": "string",
+      "pattern": "^[A-Z]{2}$",
+      "description": "Code pays ISO 3166-1 alpha-2."
+    },
+    "poids_kg": {
+      "type": "number",
+      "minimum": 0.01,
+      "maximum": 500,
+      "description": "Poids brut logistique en kilogrammes."
+    },
+    "date_maj": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}[T ][0-9]{2}:[0-9]{2}:[0-9]{2}",
+      "description": "Horodatage ISO 8601 de derniere mise a jour."
+    }
+  }
+}
