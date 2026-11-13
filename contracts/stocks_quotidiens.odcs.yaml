@@ -1,0 +1,138 @@
+# Data Contract conforme a l'Open Data Contract Standard (ODCS) v3 - Bitol / Linux Foundation
+apiVersion: v3.0.2
+kind: DataContract
+id: urn:datacontract:offre-supply:stocks-quotidiens
+name: Stocks quotidiens par site
+version: 1.2.0
+status: active
+domain: offre-supply
+tenant: enseigne-decoration
+dataProduct: stocks-quotidiens
+
+description:
+  purpose: >
+    Photo quotidienne des stocks disponibles et reserves par reference produit
+    (canapes, luminaires, vaisselle, tapis, rangement) et par site, magasin ou
+    entrepot. Sert au pilotage des ruptures, au calcul de couverture et au
+    reassort automatique.
+  usage: >
+    Prevision de la demande, alertes de rupture, tableaux de bord supply,
+    calcul du taux de disponibilite en rayon.
+  limitations: >
+    Granularite journaliere uniquement. Les mouvements intra-journaliers ne
+    sont pas traces dans ce flux.
+
+schema:
+  - name: stocks_quotidiens
+    physicalName: stocks_quotidiens.csv
+    logicalType: object
+    physicalType: csv
+    description: Une ligne par jour, par reference produit et par site.
+    quality:
+      - type: library
+        rule: uniqueCombination
+        description: Unicite de la combinaison date, reference et site.
+        columns: [date_stock, sku, site_id]
+    properties:
+      - name: date_stock
+        logicalType: date
+        physicalType: string
+        required: true
+        description: Date de la photo de stock (fuseau Europe/Paris).
+      - name: sku
+        logicalType: string
+        physicalType: string
+        required: true
+        description: Reference produit interne, prefixee par la famille.
+        quality:
+          - type: library
+            rule: pattern
+            description: Format CAN/LUM/VAI/TAP/RAN suivi de 5 chiffres.
+            pattern: "^(CAN|LUM|VAI|TAP|RAN)-[0-9]{5}$"
+      - name: site_id
+        logicalType: string
+        physicalType: string
+        required: true
+        description: Identifiant du site, MAG pour magasin, ENT pour entrepot.
+        quality:
+          - type: library
+            rule: pattern
+            description: Format MAG ou ENT suivi de 3 chiffres.
+            pattern: "^(MAG|ENT)-[0-9]{3}$"
+      - name: type_site
+        logicalType: string
+        physicalType: string
+        required: true
+        description: Nature du site de stockage.
+        quality:
+          - type: library
+            rule: validValues
+            description: Valeurs autorisees pour le type de site.
+            validValues: [magasin, entrepot]
+      - name: quantite_disponible
+        logicalType: integer
+        physicalType: integer
+        required: true
+        description: Quantite vendable immediatement, jamais negative.
+        quality:
+          - type: library
+            rule: range
+            description: Quantite disponible entre 0 et 100000.
+            mustBeGreaterOrEqualTo: 0
+            mustBeLessOrEqualTo: 100000
+      - name: quantite_reservee
+        logicalType: integer
+        physicalType: integer
+        required: true
+        description: Quantite reservee par des commandes clients.
+        quality:
+          - type: library
+            rule: range
+            description: Quantite reservee entre 0 et 100000.
+            mustBeGreaterOrEqualTo: 0
+            mustBeLessOrEqualTo: 100000
+      - name: horodatage_maj
+        logicalType: timestamp
+        physicalType: string
+        required: true
+        description: Horodatage de calcul de la ligne par la plateforme data.
+
+slaProperties:
+  - property: frequency
+    value: 1
+    unit: d
+    description: Publication une fois par jour avant 06h00.
+  - property: freshness
+    value: 24
+    unit: h
+    element: stocks_quotidiens.horodatage_maj
+    description: Aucune ligne ne doit avoir plus de 24 heures.
+  - property: completeness
+    value: 99.0
+    unit: percent
+    description: Taux global de cellules renseignees superieur ou egal a 99 pour cent.
+  - property: availability
+    value: 99.5
+    unit: percent
+    description: Disponibilite du data product sur le mois glissant.
+
+support:
+  - channel: "#data-offre-supply"
+    tool: slack
+    scope: interactive
+  - channel: data-supply@enseigne-deco.example
+    tool: email
+    scope: issues
+
+team:
+  - username: h.andriamaholy
+    role: owner
+    dateIn: "2026-01-05"
+  - username: equipe-data-supply
+    role: steward
+
+customProperties:
+  - property: domaineMetier
+    value: Offre et Supply
+  - property: classificationDonnees
+    value: interne

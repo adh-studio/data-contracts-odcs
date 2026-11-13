@@ -1,0 +1,144 @@
+# Data Contract conforme a l'Open Data Contract Standard (ODCS) v3 - Bitol / Linux Foundation
+apiVersion: v3.0.2
+kind: DataContract
+id: urn:datacontract:offre-supply:referentiel-produits
+name: Referentiel produits
+version: 2.0.1
+status: active
+domain: offre-supply
+tenant: enseigne-decoration
+dataProduct: referentiel-produits
+
+description:
+  purpose: >
+    Referentiel maitre des produits de l'offre decoration et ameublement,
+    canapes, luminaires, vaisselle, tapis et rangement. Source de verite pour
+    les attributs commerciaux et logistiques utilises par tous les data
+    products du domaine Offre et Supply.
+  usage: >
+    Jointures de reference pour les stocks et les commandes, calcul de marge,
+    affichage e-commerce, declaration eco-participation.
+  limitations: >
+    Les prix promotionnels ne figurent pas dans ce referentiel.
+
+schema:
+  - name: referentiel_produits
+    physicalName: referentiel_produits.csv
+    logicalType: object
+    physicalType: csv
+    description: Une ligne par reference produit active au catalogue.
+    properties:
+      - name: sku
+        logicalType: string
+        physicalType: string
+        required: true
+        unique: true
+        description: Reference produit interne, cle primaire du referentiel.
+        quality:
+          - type: library
+            rule: pattern
+            description: Format CAN/LUM/VAI/TAP/RAN suivi de 5 chiffres.
+            pattern: "^(CAN|LUM|VAI|TAP|RAN)-[0-9]{5}$"
+      - name: libelle
+        logicalType: string
+        physicalType: string
+        required: true
+        description: Libelle commercial du produit en francais.
+      - name: famille
+        logicalType: string
+        physicalType: string
+        required: true
+        description: Famille marchandise de rattachement.
+        quality:
+          - type: library
+            rule: validValues
+            description: Familles marchandises du plan de collection.
+            validValues: [canapes, luminaires, vaisselle, tapis, rangement]
+      - name: prix_vente_eur
+        logicalType: number
+        physicalType: decimal
+        required: true
+        description: Prix de vente public conseille, en euros TTC.
+        quality:
+          - type: library
+            rule: range
+            description: Prix de vente strictement positif et inferieur a 20000 euros.
+            mustBeGreaterOrEqualTo: 0.01
+            mustBeLessOrEqualTo: 20000
+      - name: eco_participation_eur
+        logicalType: number
+        physicalType: decimal
+        required: true
+        description: Montant de l'eco-participation mobilier, en euros.
+        quality:
+          - type: library
+            rule: range
+            description: Eco-participation entre 0 et 200 euros.
+            mustBeGreaterOrEqualTo: 0
+            mustBeLessOrEqualTo: 200
+      - name: pays_origine
+        logicalType: string
+        physicalType: string
+        required: true
+        description: Code pays ISO 3166-1 alpha-2 du pays de fabrication.
+        quality:
+          - type: library
+            rule: pattern
+            description: Code pays sur deux lettres majuscules.
+            pattern: "^[A-Z]{2}$"
+      - name: poids_kg
+        logicalType: number
+        physicalType: decimal
+        required: true
+        description: Poids brut logistique en kilogrammes.
+        quality:
+          - type: library
+            rule: range
+            description: Poids entre 0.01 et 500 kilogrammes.
+            mustBeGreaterOrEqualTo: 0.01
+            mustBeLessOrEqualTo: 500
+      - name: date_maj
+        logicalType: timestamp
+        physicalType: string
+        required: true
+        description: Horodatage de derniere mise a jour de la fiche produit.
+
+slaProperties:
+  - property: frequency
+    value: 1
+    unit: d
+    description: Publication quotidienne depuis le PIM.
+  - property: freshness
+    value: 168
+    unit: h
+    element: referentiel_produits.date_maj
+    description: Toute fiche produit doit avoir ete revalidee depuis moins de 7 jours.
+  - property: completeness
+    value: 100.0
+    unit: percent
+    description: Referentiel maitre, aucune cellule vide toleree.
+  - property: availability
+    value: 99.9
+    unit: percent
+    description: Disponibilite du data product sur le mois glissant.
+
+support:
+  - channel: "#data-offre-supply"
+    tool: slack
+    scope: interactive
+  - channel: data-supply@enseigne-deco.example
+    tool: email
+    scope: issues
+
+team:
+  - username: h.andriamaholy
+    role: owner
+    dateIn: "2026-01-05"
+  - username: equipe-referentiels
+    role: steward
+
+customProperties:
+  - property: domaineMetier
+    value: Offre et Supply
+  - property: classificationDonnees
+    value: interne
