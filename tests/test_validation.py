@@ -6,7 +6,7 @@ import pytest
 from validateur import valider_fichier
 from validateur.cli import principal
 
-FLUX = ["stocks_quotidiens", "commandes_fournisseurs", "referentiel_produits"]
+FLUX = ["stocks_quotidiens", "lots_import", "referentiel_produits"]
 
 # Chaque alteration de scripts/genere_donnees.py doit etre detectee par la
 # regle correspondante. C'est le coeur de la recette fonctionnelle.
@@ -14,28 +14,29 @@ VIOLATIONS_ATTENDUES = {
     "stocks_quotidiens": {
         "stocks_quotidiens.sku.pattern",
         "stocks_quotidiens.quantite_disponible.plage",
-        "stocks_quotidiens.type_site.valeurs_valides",
+        "stocks_quotidiens.type_depot.valeurs_valides",
         "stocks_quotidiens.sla.fraicheur",
-        "stocks_quotidiens.site_id.non_nul",
+        "stocks_quotidiens.depot_id.non_nul",
         "stocks_quotidiens.unicite_combinaison",
         "stocks_quotidiens.json_schema",
     },
-    "commandes_fournisseurs": {
-        "commandes_fournisseurs.statut.valeurs_valides",
-        "commandes_fournisseurs.prix_unitaire_eur.plage",
-        "commandes_fournisseurs.ordre_dates",
-        "commandes_fournisseurs.fournisseur_id.non_nul",
-        "commandes_fournisseurs.unicite_combinaison",
-        "commandes_fournisseurs.sla.fraicheur",
-        "commandes_fournisseurs.json_schema",
+    "lots_import": {
+        "lots_import.statut.valeurs_valides",
+        "lots_import.prix_unitaire_mga.plage",
+        "lots_import.mode_fret.valeurs_valides",
+        "lots_import.ordre_dates",
+        "lots_import.fournisseur_id.non_nul",
+        "lots_import.unicite_combinaison",
+        "lots_import.sla.fraicheur",
+        "lots_import.json_schema",
     },
     "referentiel_produits": {
         "referentiel_produits.famille.valeurs_valides",
-        "referentiel_produits.prix_vente_eur.plage",
-        "referentiel_produits.libelle.non_nul",
+        "referentiel_produits.prix_vente_mga.plage",
+        "referentiel_produits.nom.non_nul",
         "referentiel_produits.sku.unicite",
         "referentiel_produits.sla.fraicheur",
-        "referentiel_produits.pays_origine.pattern",
+        "referentiel_produits.fournisseur_id.pattern",
         "referentiel_produits.sla.completude",
         "referentiel_produits.json_schema",
     },

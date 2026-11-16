@@ -1,13 +1,13 @@
-sku,libelle,famille,prix_vente_eur,eco_participation_eur,pays_origine,poids_kg,date_maj
-CAN-37985,Canape convertible Porto,jardinage,1558.94,15.59,IN,72.26,2026-11-12T23:42:28
-CAN-45212,Canape 3 places Oslo tissu chine,canapes,-10.0,7.68,VN,27.48,2026-11-10T10:33:28
-CAN-70542,,canapes,524.48,5.24,PT,67.15,2026-11-12T06:12:37
-LUM-14828,Canape convertible Porto,canapes,1335.67,13.36,PT,52.25,2026-11-09T15:54:44
-LUM-14828,Lampe a poser ceramique Sora,luminaires,937.64,0.0,VN,35.89,2026-11-12T22:44:37
-LUM-35576,Applique murale noire Pia,luminaires,800.01,0.0,IN,39.76,2026-10-14T12:07:11
-LUM-35619,Suspension rotin Bali,luminaires,659.71,0.0,France,12.1,2026-11-11T23:15:06
-LUM-82762,Applique murale noire Pia,luminaires,361.63,0.0,IN,31.82,2026-11-12T01:53:36
-RAN-14205,Colonne de rangement Brick,rangement,331.12,3.31,PT,25.19,2026-11-11T13:16:45
-RAN-39603,Buffet cannage Saigon,rangement,927.16,9.27,IN,44.95,2026-11-12T00:59:19
-RAN-60649,Colonne de rangement Brick,rangement,661.88,6.62,IT,60.97,2026-11-10T15:34:58
-RAN-79267,Buffet cannage Saigon,rangement,337.23,3.37,FR,28.28,2026-11-12T22:58:39
+sku,nom,famille,prix_achat_mga,prix_vente_mga,fournisseur_id,date_maj
+AUD-14828,Casque gaming filaire,jardinage,380000,562000,FRN-0002,2026-11-14T16:25:25
+AUD-35576,Barre de son 2.1,audio,511000,-10000,FRN-0003,2026-11-14T04:05:20
+AUD-35619,,audio,899000,1216000,FRN-0005,2026-11-13T18:57:03
+CON-37985,Barre de son 2.1,audio,1909000,2920000,FRN-0006,2026-11-13T05:00:56
+CON-37985,Manette DualSense blanche,consoles_gaming,310000,410000,FRN-0006,2026-11-14T02:44:49
+CON-45212,Console PS5 Digital,consoles_gaming,1898000,2423000,FRN-0006,2026-10-17T09:03:10
+CON-70542,Console PS5 Digital,consoles_gaming,1872000,3027000,Shenzhen,2026-11-15T23:09:00
+CON-74481,Console PS5 Slim 1To,consoles_gaming,813000,1085000,FRN-0002,2026-11-13T00:54:02
+ELM-33683,Bouilloire electrique inox,electromenager,1118000,1658000,FRN-0007,2026-11-13T22:07:45
+ELM-74315,Fer a repasser vapeur,electromenager,809000,1219000,FRN-0005,2026-11-14T14:55:20
+ELM-83053,Ventilateur sur pied,electromenager,749000,989000,FRN-0003,2026-11-14T23:48:56
+ELM-97589,Ventilateur sur pied,electromenager,1354000,2198000,FRN-0006,2026-11-13T02:21:20

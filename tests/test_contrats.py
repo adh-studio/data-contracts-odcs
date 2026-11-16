@@ -4,7 +4,7 @@ import pytest
 
 from validateur import charger_contrat, charger_schema_json
 
-FLUX = ["stocks_quotidiens", "commandes_fournisseurs", "referentiel_produits"]
+FLUX = ["stocks_quotidiens", "lots_import", "referentiel_produits"]
 
 
 @pytest.mark.parametrize("flux", FLUX)
@@ -12,9 +12,10 @@ def test_contrat_structure_odcs(racine, flux):
     contrat = charger_contrat(racine / "contracts" / f"{flux}.odcs.yaml")
     assert contrat["kind"] == "DataContract"
     assert contrat["apiVersion"].startswith("v3")
-    assert contrat["domain"] == "offre-supply"
+    assert contrat["domain"] == "import-distribution"
+    assert contrat["tenant"] == "import-distribution-madagascar"
     assert contrat["status"] == "active"
-    assert contrat["id"].startswith("urn:datacontract:offre-supply:")
+    assert contrat["id"].startswith("urn:datacontract:import-distribution:")
     # Semantique : chaque colonne est decrite
     for prop in contrat["schema"][0]["properties"]:
         assert prop.get("description"), f"{flux}.{prop['name']} sans description"

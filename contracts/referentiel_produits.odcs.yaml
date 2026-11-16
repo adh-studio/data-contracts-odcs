@@ -1,25 +1,29 @@
 # Data Contract conforme a l'Open Data Contract Standard (ODCS) v3 - Bitol / Linux Foundation
 apiVersion: v3.0.2
 kind: DataContract
-id: urn:datacontract:offre-supply:referentiel-produits
+id: urn:datacontract:import-distribution:referentiel-produits
 name: Referentiel produits
-version: 2.0.1
+version: 3.0.0
 status: active
-domain: offre-supply
-tenant: enseigne-decoration
+domain: import-distribution
+tenant: import-distribution-madagascar
 dataProduct: referentiel-produits
 
 description:
   purpose: >
-    Referentiel maitre des produits de l'offre decoration et ameublement,
-    canapes, luminaires, vaisselle, tapis et rangement. Source de verite pour
-    les attributs commerciaux et logistiques utilises par tous les data
-    products du domaine Offre et Supply.
+    Referentiel maitre des produits electroniques importes et distribues a
+    Madagascar : consoles et gaming, audio, telephonie et accessoires, montres
+    connectees, eclairage LED, electromenager. Source de verite pour les
+    attributs commerciaux (prix d'achat et de vente en ariary) et le
+    rattachement fournisseur, utilisee par tous les data products du domaine
+    import-distribution.
   usage: >
-    Jointures de reference pour les stocks et les commandes, calcul de marge,
-    affichage e-commerce, declaration eco-participation.
+    Jointures de reference pour les stocks des depots et les lots d'import,
+    calcul de marge en MGA, etiquetage boutique, alimentation de l'entrepot
+    analytique supply-dbt-warehouse.
   limitations: >
-    Les prix promotionnels ne figurent pas dans ce referentiel.
+    Les prix promotionnels et les remises boutique ne figurent pas dans ce
+    referentiel.
 
 schema:
   - name: referentiel_produits
@@ -37,13 +41,13 @@ schema:
         quality:
           - type: library
             rule: pattern
-            description: Format CAN/LUM/VAI/TAP/RAN suivi de 5 chiffres.
-            pattern: "^(CAN|LUM|VAI|TAP|RAN)-[0-9]{5}$"
-      - name: libelle
+            description: Format CON/AUD/TEL/MON/LED/ELM suivi de 5 chiffres.
+            pattern: "^(CON|AUD|TEL|MON|LED|ELM)-[0-9]{5}$"
+      - name: nom
         logicalType: string
         physicalType: string
         required: true
-        description: Libelle commercial du produit en francais.
+        description: Nom commercial du produit en francais.
       - name: famille
         logicalType: string
         physicalType: string
@@ -52,51 +56,43 @@ schema:
         quality:
           - type: library
             rule: validValues
-            description: Familles marchandises du plan de collection.
-            validValues: [canapes, luminaires, vaisselle, tapis, rangement]
-      - name: prix_vente_eur
-        logicalType: number
-        physicalType: decimal
+            description: Les six familles du catalogue electronique.
+            validValues: [consoles_gaming, audio, telephonie_accessoires,
+                          montres_connectees, eclairage_led, electromenager]
+      - name: prix_achat_mga
+        logicalType: integer
+        physicalType: integer
         required: true
-        description: Prix de vente public conseille, en euros TTC.
+        description: Prix d'achat fournisseur de reference, en ariary malgaches (MGA).
         quality:
           - type: library
             rule: range
-            description: Prix de vente strictement positif et inferieur a 20000 euros.
-            mustBeGreaterOrEqualTo: 0.01
-            mustBeLessOrEqualTo: 20000
-      - name: eco_participation_eur
-        logicalType: number
-        physicalType: decimal
+            description: Prix d'achat entre 1000 et 10000000 d'ariary.
+            mustBeGreaterOrEqualTo: 1000
+            mustBeLessOrEqualTo: 10000000
+      - name: prix_vente_mga
+        logicalType: integer
+        physicalType: integer
         required: true
-        description: Montant de l'eco-participation mobilier, en euros.
+        description: Prix de vente conseille en boutique, en ariary malgaches (MGA).
         quality:
           - type: library
             rule: range
-            description: Eco-participation entre 0 et 200 euros.
-            mustBeGreaterOrEqualTo: 0
-            mustBeLessOrEqualTo: 200
-      - name: pays_origine
+            description: Prix de vente entre 1000 et 20000000 d'ariary.
+            mustBeGreaterOrEqualTo: 1000
+            mustBeLessOrEqualTo: 20000000
+      - name: fournisseur_id
         logicalType: string
         physicalType: string
         required: true
-        description: Code pays ISO 3166-1 alpha-2 du pays de fabrication.
+        description: >
+          Fournisseur principal de la reference (Shenzhen, Guangzhou, Yiwu,
+          Dongguan ou Dubai), cle vers le referentiel achats.
         quality:
           - type: library
             rule: pattern
-            description: Code pays sur deux lettres majuscules.
-            pattern: "^[A-Z]{2}$"
-      - name: poids_kg
-        logicalType: number
-        physicalType: decimal
-        required: true
-        description: Poids brut logistique en kilogrammes.
-        quality:
-          - type: library
-            rule: range
-            description: Poids entre 0.01 et 500 kilogrammes.
-            mustBeGreaterOrEqualTo: 0.01
-            mustBeLessOrEqualTo: 500
+            description: Format FRN suivi de 4 chiffres.
+            pattern: "^FRN-[0-9]{4}$"
       - name: date_maj
         logicalType: timestamp
         physicalType: string
@@ -105,9 +101,9 @@ schema:
 
 slaProperties:
   - property: frequency
-    value: 1
+    value: 7
     unit: d
-    description: Publication quotidienne depuis le PIM.
+    description: Publication hebdomadaire apres revue du catalogue import.
   - property: freshness
     value: 168
     unit: h
@@ -123,10 +119,10 @@ slaProperties:
     description: Disponibilite du data product sur le mois glissant.
 
 support:
-  - channel: "#data-offre-supply"
+  - channel: "#data-import-mada"
     tool: slack
     scope: interactive
-  - channel: data-supply@enseigne-deco.example
+  - channel: data-import@mada-electronique.example
     tool: email
     scope: issues
 
@@ -139,6 +135,8 @@ team:
 
 customProperties:
   - property: domaineMetier
-    value: Offre et Supply
+    value: Import et distribution de produits electroniques a Madagascar
   - property: classificationDonnees
     value: interne
+  - property: entrepotAnalytique
+    value: supply-dbt-warehouse (dbt + DuckDB)

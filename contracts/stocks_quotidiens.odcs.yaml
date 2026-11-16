@@ -1,44 +1,47 @@
 # Data Contract conforme a l'Open Data Contract Standard (ODCS) v3 - Bitol / Linux Foundation
 apiVersion: v3.0.2
 kind: DataContract
-id: urn:datacontract:offre-supply:stocks-quotidiens
-name: Stocks quotidiens par site
-version: 1.2.0
+id: urn:datacontract:import-distribution:stocks-quotidiens
+name: Stocks quotidiens par depot
+version: 2.0.0
 status: active
-domain: offre-supply
-tenant: enseigne-decoration
+domain: import-distribution
+tenant: import-distribution-madagascar
 dataProduct: stocks-quotidiens
 
 description:
   purpose: >
     Photo quotidienne des stocks disponibles et reserves par reference produit
-    (canapes, luminaires, vaisselle, tapis, rangement) et par site, magasin ou
-    entrepot. Sert au pilotage des ruptures, au calcul de couverture et au
-    reassort automatique.
+    (consoles et gaming, audio, telephonie, montres connectees, eclairage LED,
+    electromenager) et par depot : depot central Ankorondrano, boutiques
+    Analakely et Behoririka, depot regional de Tamatave. Sert au pilotage des
+    ruptures, au calcul de couverture et aux decisions de reassort import.
   usage: >
-    Prevision de la demande, alertes de rupture, tableaux de bord supply,
-    calcul du taux de disponibilite en rayon.
+    Alertes de rupture sur les produits a forte rotation, calcul de la
+    couverture de stock en jours, arbitrage des transferts entre depots,
+    declenchement des commandes de reapprovisionnement aupres des fournisseurs
+    de Shenzhen, Guangzhou, Yiwu, Dongguan et Dubai.
   limitations: >
-    Granularite journaliere uniquement. Les mouvements intra-journaliers ne
-    sont pas traces dans ce flux.
+    Granularite journaliere uniquement. Les mouvements intra-journaliers et
+    les marchandises en cours de dedouanement ne figurent pas dans ce flux.
 
 schema:
   - name: stocks_quotidiens
     physicalName: stocks_quotidiens.csv
     logicalType: object
     physicalType: csv
-    description: Une ligne par jour, par reference produit et par site.
+    description: Une ligne par jour, par reference produit et par depot.
     quality:
       - type: library
         rule: uniqueCombination
-        description: Unicite de la combinaison date, reference et site.
-        columns: [date_stock, sku, site_id]
+        description: Unicite de la combinaison date, reference et depot.
+        columns: [date_stock, sku, depot_id]
     properties:
       - name: date_stock
         logicalType: date
         physicalType: string
         required: true
-        description: Date de la photo de stock (fuseau Europe/Paris).
+        description: Date de la photo de stock (fuseau Indian/Antananarivo).
       - name: sku
         logicalType: string
         physicalType: string
@@ -47,28 +50,30 @@ schema:
         quality:
           - type: library
             rule: pattern
-            description: Format CAN/LUM/VAI/TAP/RAN suivi de 5 chiffres.
-            pattern: "^(CAN|LUM|VAI|TAP|RAN)-[0-9]{5}$"
-      - name: site_id
+            description: Format CON/AUD/TEL/MON/LED/ELM suivi de 5 chiffres.
+            pattern: "^(CON|AUD|TEL|MON|LED|ELM)-[0-9]{5}$"
+      - name: depot_id
         logicalType: string
         physicalType: string
         required: true
-        description: Identifiant du site, MAG pour magasin, ENT pour entrepot.
+        description: >
+          Identifiant du depot. DEP-001 Ankorondrano (central), DEP-002
+          Analakely, DEP-003 Behoririka, DEP-004 Tamatave.
         quality:
           - type: library
             rule: pattern
-            description: Format MAG ou ENT suivi de 3 chiffres.
-            pattern: "^(MAG|ENT)-[0-9]{3}$"
-      - name: type_site
+            description: Format DEP suivi de 3 chiffres.
+            pattern: "^DEP-[0-9]{3}$"
+      - name: type_depot
         logicalType: string
         physicalType: string
         required: true
-        description: Nature du site de stockage.
+        description: Nature du site de stockage dans le reseau de distribution.
         quality:
           - type: library
             rule: validValues
-            description: Valeurs autorisees pour le type de site.
-            validValues: [magasin, entrepot]
+            description: Valeurs autorisees pour le type de depot.
+            validValues: [central, boutique, depot_regional]
       - name: quantite_disponible
         logicalType: integer
         physicalType: integer
@@ -84,7 +89,7 @@ schema:
         logicalType: integer
         physicalType: integer
         required: true
-        description: Quantite reservee par des commandes clients.
+        description: Quantite reservee par des commandes clients ou des transferts.
         quality:
           - type: library
             rule: range
@@ -101,7 +106,7 @@ slaProperties:
   - property: frequency
     value: 1
     unit: d
-    description: Publication une fois par jour avant 06h00.
+    description: Publication une fois par jour avant 07h00, heure d'Antananarivo.
   - property: freshness
     value: 24
     unit: h
@@ -117,10 +122,10 @@ slaProperties:
     description: Disponibilite du data product sur le mois glissant.
 
 support:
-  - channel: "#data-offre-supply"
+  - channel: "#data-import-mada"
     tool: slack
     scope: interactive
-  - channel: data-supply@enseigne-deco.example
+  - channel: data-import@mada-electronique.example
     tool: email
     scope: issues
 
@@ -128,11 +133,13 @@ team:
   - username: h.andriamaholy
     role: owner
     dateIn: "2026-01-05"
-  - username: equipe-data-supply
+  - username: equipe-data-depots
     role: steward
 
 customProperties:
   - property: domaineMetier
-    value: Offre et Supply
+    value: Import et distribution de produits electroniques a Madagascar
   - property: classificationDonnees
     value: interne
+  - property: entrepotAnalytique
+    value: supply-dbt-warehouse (dbt + DuckDB)

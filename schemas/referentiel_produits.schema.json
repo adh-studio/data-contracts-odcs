@@ -1,59 +1,53 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:datacontract:offre-supply:referentiel-produits:schema",
-  "title": "Fiche produit du referentiel",
+  "$id": "urn:datacontract:import-distribution:referentiel-produits:schema",
+  "title": "Fiche produit du referentiel electronique",
   "description": "Validation technique d'une ligne du flux referentiel_produits, equivalent JSON Schema du contrat ODCS.",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "sku",
-    "libelle",
+    "nom",
     "famille",
-    "prix_vente_eur",
-    "eco_participation_eur",
-    "pays_origine",
-    "poids_kg",
+    "prix_achat_mga",
+    "prix_vente_mga",
+    "fournisseur_id",
     "date_maj"
   ],
   "properties": {
     "sku": {
       "type": "string",
-      "pattern": "^(CAN|LUM|VAI|TAP|RAN)-[0-9]{5}$",
+      "pattern": "^(CON|AUD|TEL|MON|LED|ELM)-[0-9]{5}$",
       "description": "Reference produit interne, cle primaire."
     },
-    "libelle": {
+    "nom": {
       "type": "string",
       "minLength": 3,
       "maxLength": 120,
-      "description": "Libelle commercial du produit."
+      "description": "Nom commercial du produit."
     },
     "famille": {
       "type": "string",
-      "enum": ["canapes", "luminaires", "vaisselle", "tapis", "rangement"],
-      "description": "Famille marchandise."
+      "enum": ["consoles_gaming", "audio", "telephonie_accessoires",
+               "montres_connectees", "eclairage_led", "electromenager"],
+      "description": "Famille marchandise du catalogue electronique."
     },
-    "prix_vente_eur": {
-      "type": "number",
-      "minimum": 0.01,
-      "maximum": 20000,
-      "description": "Prix de vente public conseille en euros TTC."
+    "prix_achat_mga": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 10000000,
+      "description": "Prix d'achat fournisseur en ariary malgaches (MGA)."
     },
-    "eco_participation_eur": {
-      "type": "number",
-      "minimum": 0,
-      "maximum": 200,
-      "description": "Montant de l'eco-participation mobilier."
+    "prix_vente_mga": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 20000000,
+      "description": "Prix de vente conseille en boutique, en ariary malgaches (MGA)."
     },
-    "pays_origine": {
+    "fournisseur_id": {
       "type": "string",
-      "pattern": "^[A-Z]{2}$",
-      "description": "Code pays ISO 3166-1 alpha-2."
-    },
-    "poids_kg": {
-      "type": "number",
-      "minimum": 0.01,
-      "maximum": 500,
-      "description": "Poids brut logistique en kilogrammes."
+      "pattern": "^FRN-[0-9]{4}$",
+      "description": "Fournisseur principal de la reference."
     },
     "date_maj": {
       "type": "string",

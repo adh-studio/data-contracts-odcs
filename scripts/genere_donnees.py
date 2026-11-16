@@ -1,7 +1,9 @@
 """Genere les jeux de donnees synthetiques, conformes et volontairement casses.
 
-Univers : enseigne de decoration et d'ameublement (canapes, luminaires,
-vaisselle, tapis, rangement), magasins et entrepots en France.
+Univers : import et distribution de produits electroniques a Madagascar
+(consoles et gaming, audio, telephonie, montres connectees, eclairage LED,
+electromenager), fournisseurs de Shenzhen, Guangzhou, Yiwu, Dongguan et Dubai,
+depots Ankorondrano, Analakely, Behoririka et Tamatave. Prix en ariary (MGA).
 
 Les horodatages sont calcules relativement a l'instant d'execution pour que
 les SLA de fraicheur restent verifiables a tout moment. Le reste du contenu
@@ -22,32 +24,40 @@ GRAINE = 20260113
 RACINE = Path(__file__).resolve().parent.parent
 
 FAMILLES = {
-    "CAN": ("canapes", [
-        "Canape 3 places Oslo tissu chine", "Canape d'angle Bergen velours",
-        "Canape convertible Porto", "Canape 2 places Milan cuir",
+    "CON": ("consoles_gaming", [
+        "Console PS5 Slim 1To", "Console PS5 Digital",
+        "Manette DualSense blanche", "Manette Xbox sans fil",
     ]),
-    "LUM": ("luminaires", [
-        "Suspension rotin Bali", "Lampadaire arque laiton Elio",
-        "Lampe a poser ceramique Sora", "Applique murale noire Pia",
+    "AUD": ("audio", [
+        "Ecouteurs TWS Pro reduction de bruit", "Enceinte Bluetooth etanche",
+        "Casque gaming filaire", "Barre de son 2.1",
     ]),
-    "VAI": ("vaisselle", [
-        "Assiette gres reactive Kyo lot de 4", "Mug emaille Fjord",
-        "Saladier bambou Luna", "Service a the Hanoi 12 pieces",
+    "TEL": ("telephonie_accessoires", [
+        "Smartphone 128 Go double SIM", "Powerbank 20000 mAh",
+        "Chargeur rapide 65W GaN", "Coque renforcee universelle",
     ]),
-    "TAP": ("tapis", [
-        "Tapis berbere Atlas 160x230", "Tapis jute naturel Goa rond",
-        "Tapis shaggy Nuage gris", "Tapis d'exterieur Patio raye",
+    "MON": ("montres_connectees", [
+        "Montre connectee AMOLED", "Bracelet connecte sport",
+        "Montre GPS running", "Montre enfant avec carte SIM",
     ]),
-    "RAN": ("rangement", [
-        "Etagere echelle chene Lund", "Buffet cannage Saigon",
-        "Panier osier Mimosa", "Colonne de rangement Brick",
+    "LED": ("eclairage_led", [
+        "Ruban LED RGB 5 metres", "Ampoule LED connectee E27",
+        "Projecteur LED solaire 100W", "Lampe de bureau LED tactile",
+    ]),
+    "ELM": ("electromenager", [
+        "Bouilloire electrique inox", "Blender 1.5 litre",
+        "Fer a repasser vapeur", "Ventilateur sur pied",
     ]),
 }
-PAYS = ["FR", "PT", "VN", "IN", "PL", "IT"]
-SITES = [("MAG-001", "magasin"), ("MAG-014", "magasin"), ("MAG-027", "magasin"),
-         ("ENT-901", "entrepot"), ("ENT-902", "entrepot")]
-FOURNISSEURS = ["FRN-1001", "FRN-1002", "FRN-2040", "FRN-3310"]
-STATUTS = ["confirmee", "expediee", "recue", "brouillon"]
+DEPOTS = [("DEP-001", "central"), ("DEP-002", "boutique"),
+          ("DEP-003", "boutique"), ("DEP-004", "depot_regional")]
+# Fournisseurs et mode de fret contractuel, calques sur le referentiel achats
+# (Shenzhen, Guangzhou, Huaqiangbei, Yiwu, Dongguan, Dubai).
+FOURNISSEURS = [("FRN-0001", "AIR"), ("FRN-0002", "AIR"), ("FRN-0003", "AIR"),
+                ("FRN-0004", "SEA"), ("FRN-0005", "SEA"), ("FRN-0006", "SEA"),
+                ("FRN-0007", "AIR"), ("FRN-0008", "AIR")]
+DELAIS_FRET = {"AIR": (10, 15), "SEA": (40, 55)}
+STATUTS = ["commande", "embarque", "en_transit", "dedouane", "receptionne"]
 
 
 def _ts(dt: datetime) -> str:
@@ -78,27 +88,30 @@ def genere_stocks(skus: list[str], alea: random.Random, maintenant: datetime) ->
     date_stock = maintenant.strftime("%Y-%m-%d")
     lignes = []
     for sku in skus:
-        for site_id, type_site in SITES:
+        for depot_id, type_depot in DEPOTS:
             maj = maintenant - timedelta(hours=alea.uniform(1, 6))
             lignes.append([
-                date_stock, sku, site_id, type_site,
+                date_stock, sku, depot_id, type_depot,
                 alea.randint(0, 420), alea.randint(0, 35), _ts(maj),
             ])
     return lignes
 
 
-def genere_commandes(skus: list[str], alea: random.Random, maintenant: datetime) -> list[list]:
+def genere_lots(skus: list[str], alea: random.Random, maintenant: datetime) -> list[list]:
     lignes = []
     for i in range(40):
-        commande_id = f"CF-{maintenant.year}-{100000 + i}"
+        lot_id = f"LOT-{maintenant.year}-{100000 + i}"
         sku = alea.choice(skus)
-        date_commande = maintenant - timedelta(days=alea.randint(2, 30))
-        date_livraison = date_commande + timedelta(days=alea.randint(7, 60))
+        fournisseur_id, mode_fret = alea.choice(FOURNISSEURS)
+        delai_min, delai_max = DELAIS_FRET[mode_fret]
+        date_commande = maintenant - timedelta(days=alea.randint(2, 60))
+        date_arrivee = date_commande + timedelta(days=alea.randint(delai_min, delai_max))
         maj = maintenant - timedelta(hours=alea.uniform(2, 24))
+        prix_unitaire = alea.randint(30, 3000) * 1000  # 30 000 a 3 000 000 MGA
         lignes.append([
-            commande_id, alea.choice(FOURNISSEURS), sku,
-            alea.randint(10, 800), round(alea.uniform(4.5, 890.0), 2),
-            date_commande.strftime("%Y-%m-%d"), date_livraison.strftime("%Y-%m-%d"),
+            lot_id, fournisseur_id, sku,
+            alea.randint(5, 500), prix_unitaire, mode_fret,
+            date_commande.strftime("%Y-%m-%d"), date_arrivee.strftime("%Y-%m-%d"),
             alea.choice(STATUTS), _ts(maj),
         ])
     return lignes
@@ -108,13 +121,14 @@ def genere_referentiel(skus: list[str], alea: random.Random, maintenant: datetim
     lignes = []
     for sku in skus:
         prefixe = sku.split("-")[0]
-        famille, libelles = FAMILLES[prefixe]
-        prix = round(alea.uniform(9.9, 1890.0), 2)
-        eco = round(prix * 0.01, 2) if famille in ("canapes", "rangement") else 0.0
+        famille, noms = FAMILLES[prefixe]
+        prix_vente = alea.randint(50, 3500) * 1000  # 50 000 a 3 500 000 MGA
+        prix_achat = max(1000, int(prix_vente * alea.uniform(0.6, 0.8)) // 1000 * 1000)
+        fournisseur_id, _ = alea.choice(FOURNISSEURS)
         maj = maintenant - timedelta(hours=alea.uniform(6, 96))
         lignes.append([
-            sku, alea.choice(libelles), famille, prix, min(eco, 200.0),
-            alea.choice(PAYS), round(alea.uniform(0.2, 85.0), 2), _ts(maj),
+            sku, alea.choice(noms), famille, prix_achat, prix_vente,
+            fournisseur_id, _ts(maj),
         ])
     return lignes
 
@@ -127,49 +141,49 @@ def casse_stocks(lignes: list[list], maintenant: datetime) -> list[list]:
     lignes = [list(l) for l in lignes[:12]]
     lignes[0][1] = "XXX-99"                                   # pattern sku KO
     lignes[1][4] = -5                                         # plage quantite_disponible KO
-    lignes[2][3] = "drive"                                    # validValues type_site KO
+    lignes[2][3] = "conteneur"                                # validValues type_depot KO
     lignes[3][6] = _ts(maintenant - timedelta(hours=72))      # fraicheur 24 h KO
-    lignes[4][2] = ""                                         # non_nul site_id KO
-    lignes[5] = list(lignes[6])                               # doublon date+sku+site KO
+    lignes[4][2] = ""                                         # non_nul depot_id KO
+    lignes[5] = list(lignes[6])                               # doublon date+sku+depot KO
     return lignes
 
 
-def casse_commandes(lignes: list[list], maintenant: datetime) -> list[list]:
+def casse_lots(lignes: list[list], maintenant: datetime) -> list[list]:
     lignes = [list(l) for l in lignes[:12]]
-    lignes[0][7] = "perdue"                                   # validValues statut KO
-    lignes[1][4] = -12.5                                      # plage prix_unitaire_eur KO
-    lignes[2][6] = (datetime.strptime(lignes[2][5], "%Y-%m-%d")
+    lignes[0][8] = "perdu"                                    # validValues statut KO
+    lignes[1][4] = -12500                                     # plage prix_unitaire_mga KO
+    lignes[2][7] = (datetime.strptime(lignes[2][6], "%Y-%m-%d")
                     - timedelta(days=3)).strftime("%Y-%m-%d")  # ordreDates KO
     lignes[3][1] = ""                                         # non_nul fournisseur_id KO
     lignes[4][0] = lignes[5][0]
-    lignes[4][2] = lignes[5][2]                               # doublon commande+sku KO
-    lignes[6][8] = _ts(maintenant - timedelta(hours=120))     # fraicheur 48 h KO
+    lignes[4][2] = lignes[5][2]                               # doublon lot+sku KO
+    lignes[6][9] = _ts(maintenant - timedelta(hours=120))     # fraicheur 48 h KO
+    lignes[7][5] = "ROUTE"                                    # validValues mode_fret KO
     return lignes
 
 
 def casse_referentiel(lignes: list[list], maintenant: datetime) -> list[list]:
     lignes = [list(l) for l in lignes[:12]]
     lignes[0][2] = "jardinage"                                # validValues famille KO
-    lignes[1][3] = -10.0                                      # plage prix_vente_eur KO
-    lignes[2][1] = ""                                         # non_nul libelle KO (completude 100 % KO)
+    lignes[1][4] = -10000                                     # plage prix_vente_mga KO
+    lignes[2][1] = ""                                         # non_nul nom KO (completude 100 % KO)
     lignes[3][0] = lignes[4][0]                               # unicite sku KO
-    lignes[5][7] = _ts(maintenant - timedelta(days=30))       # fraicheur 168 h KO
-    lignes[6][5] = "France"                                   # pattern pays_origine KO
+    lignes[5][6] = _ts(maintenant - timedelta(days=30))       # fraicheur 168 h KO
+    lignes[6][5] = "Shenzhen"                                 # pattern fournisseur_id KO
     return lignes
 
 
 # ---------------------------------------------------------------------------
 
 ENTETES = {
-    "stocks_quotidiens": ["date_stock", "sku", "site_id", "type_site",
+    "stocks_quotidiens": ["date_stock", "sku", "depot_id", "type_depot",
                           "quantite_disponible", "quantite_reservee", "horodatage_maj"],
-    "commandes_fournisseurs": ["commande_id", "fournisseur_id", "sku",
-                               "quantite_commandee", "prix_unitaire_eur",
-                               "date_commande", "date_livraison_prevue",
-                               "statut", "horodatage_maj"],
-    "referentiel_produits": ["sku", "libelle", "famille", "prix_vente_eur",
-                             "eco_participation_eur", "pays_origine",
-                             "poids_kg", "date_maj"],
+    "lots_import": ["lot_id", "fournisseur_id", "sku",
+                    "quantite_commandee", "prix_unitaire_mga", "mode_fret",
+                    "date_commande", "date_arrivee_prevue",
+                    "statut", "horodatage_maj"],
+    "referentiel_produits": ["sku", "nom", "famille", "prix_achat_mga",
+                             "prix_vente_mga", "fournisseur_id", "date_maj"],
 }
 
 
@@ -180,12 +194,12 @@ def generer_tout(dossier: Path, maintenant: datetime | None = None) -> dict[str,
 
     conformes = {
         "stocks_quotidiens": genere_stocks(skus, alea, maintenant),
-        "commandes_fournisseurs": genere_commandes(skus, alea, maintenant),
+        "lots_import": genere_lots(skus, alea, maintenant),
         "referentiel_produits": genere_referentiel(skus, alea, maintenant),
     }
     casses = {
         "stocks_quotidiens": casse_stocks(conformes["stocks_quotidiens"], maintenant),
-        "commandes_fournisseurs": casse_commandes(conformes["commandes_fournisseurs"], maintenant),
+        "lots_import": casse_lots(conformes["lots_import"], maintenant),
         "referentiel_produits": casse_referentiel(conformes["referentiel_produits"], maintenant),
     }
 

@@ -1,0 +1,181 @@
+# Data Contract conforme a l'Open Data Contract Standard (ODCS) v3 - Bitol / Linux Foundation
+apiVersion: v3.0.2
+kind: DataContract
+id: urn:datacontract:import-distribution:lots-import
+name: Lots d'import fournisseurs
+version: 2.0.0
+status: active
+domain: import-distribution
+tenant: import-distribution-madagascar
+dataProduct: lots-import
+
+description:
+  purpose: >
+    Lignes de lots d'import passes aupres des fournisseurs de produits
+    electroniques de Shenzhen, Guangzhou, Yiwu, Dongguan et Dubai : consoles,
+    audio, telephonie, montres connectees, eclairage LED, electromenager.
+    Alimente le suivi des approvisionnements, la projection des arrivees en
+    depot apres fret et dedouanement, et la mesure de la performance
+    fournisseur.
+  usage: >
+    Suivi des delais d'acheminement (fret aerien 10 a 15 jours, fret maritime
+    40 a 55 jours), projection des entrees en stock au depot central
+    Ankorondrano, calcul du taux de service fournisseur, anticipation des
+    operations de dedouanement a Tamatave et Ivato.
+  limitations: >
+    Les avoirs, litiges fournisseurs et frais de douane detailles ne
+    transitent pas par ce flux.
+
+schema:
+  - name: lots_import
+    physicalName: lots_import.csv
+    logicalType: object
+    physicalType: csv
+    description: Une ligne par reference produit et par lot d'import.
+    quality:
+      - type: library
+        rule: uniqueCombination
+        description: Unicite de la combinaison lot et reference.
+        columns: [lot_id, sku]
+      - type: custom
+        rule: ordreDates
+        description: La date d'arrivee prevue est posterieure ou egale a la date de commande.
+        customProperties:
+          - property: colonneDebut
+            value: date_commande
+          - property: colonneFin
+            value: date_arrivee_prevue
+    properties:
+      - name: lot_id
+        logicalType: string
+        physicalType: string
+        required: true
+        description: Identifiant du lot d'import.
+        quality:
+          - type: library
+            rule: pattern
+            description: Format LOT suivi de l'annee et de 6 chiffres.
+            pattern: "^LOT-20[0-9]{2}-[0-9]{6}$"
+      - name: fournisseur_id
+        logicalType: string
+        physicalType: string
+        required: true
+        description: Identifiant du fournisseur dans le referentiel achats.
+        quality:
+          - type: library
+            rule: pattern
+            description: Format FRN suivi de 4 chiffres.
+            pattern: "^FRN-[0-9]{4}$"
+      - name: sku
+        logicalType: string
+        physicalType: string
+        required: true
+        description: Reference produit commandee.
+        quality:
+          - type: library
+            rule: pattern
+            description: Format CON/AUD/TEL/MON/LED/ELM suivi de 5 chiffres.
+            pattern: "^(CON|AUD|TEL|MON|LED|ELM)-[0-9]{5}$"
+      - name: quantite_commandee
+        logicalType: integer
+        physicalType: integer
+        required: true
+        description: Quantite commandee, strictement positive.
+        quality:
+          - type: library
+            rule: range
+            description: Quantite entre 1 et 10000.
+            mustBeGreaterOrEqualTo: 1
+            mustBeLessOrEqualTo: 10000
+      - name: prix_unitaire_mga
+        logicalType: integer
+        physicalType: integer
+        required: true
+        description: Prix d'achat unitaire negocie, en ariary malgaches (MGA).
+        quality:
+          - type: library
+            rule: range
+            description: Prix unitaire entre 1000 et 10000000 d'ariary.
+            mustBeGreaterOrEqualTo: 1000
+            mustBeLessOrEqualTo: 10000000
+      - name: mode_fret
+        logicalType: string
+        physicalType: string
+        required: true
+        description: >
+          Mode d'acheminement du lot. AIR pour le fret aerien (10 a 15 jours),
+          SEA pour le fret maritime via Tamatave (40 a 55 jours).
+        quality:
+          - type: library
+            rule: validValues
+            description: Modes de fret autorises.
+            validValues: [AIR, SEA]
+      - name: date_commande
+        logicalType: date
+        physicalType: string
+        required: true
+        description: Date d'emission de la commande aupres du fournisseur.
+      - name: date_arrivee_prevue
+        logicalType: date
+        physicalType: string
+        required: true
+        description: >
+          Date d'arrivee prevue en depot apres fret et dedouanement,
+          coherente avec le mode de fret.
+      - name: statut
+        logicalType: string
+        physicalType: string
+        required: true
+        description: Etat de la ligne de lot dans le cycle d'import.
+        quality:
+          - type: library
+            rule: validValues
+            description: Statuts autorises du cycle d'import.
+            validValues: [commande, embarque, en_transit, dedouane, receptionne, annule]
+      - name: horodatage_maj
+        logicalType: timestamp
+        physicalType: string
+        required: true
+        description: Horodatage de derniere mise a jour de la ligne.
+
+slaProperties:
+  - property: frequency
+    value: 1
+    unit: d
+    description: Publication quotidienne a J+1 apres synchronisation du suivi des imports.
+  - property: freshness
+    value: 48
+    unit: h
+    element: lots_import.horodatage_maj
+    description: Chaque ligne est rafraichie a J+1, aucune ligne ne doit avoir plus de 48 heures.
+  - property: completeness
+    value: 99.0
+    unit: percent
+    description: Taux global de cellules renseignees superieur ou egal a 99 pour cent.
+  - property: availability
+    value: 99.0
+    unit: percent
+    description: Disponibilite du data product sur le mois glissant.
+
+support:
+  - channel: "#data-import-mada"
+    tool: slack
+    scope: interactive
+  - channel: data-import@mada-electronique.example
+    tool: email
+    scope: issues
+
+team:
+  - username: h.andriamaholy
+    role: owner
+    dateIn: "2026-01-05"
+  - username: equipe-achats-import
+    role: steward
+
+customProperties:
+  - property: domaineMetier
+    value: Import et distribution de produits electroniques a Madagascar
+  - property: classificationDonnees
+    value: confidentiel-achats
+  - property: entrepotAnalytique
+    value: supply-dbt-warehouse (dbt + DuckDB)

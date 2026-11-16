@@ -1,15 +1,15 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:datacontract:offre-supply:stocks-quotidiens:schema",
-  "title": "Ligne de stock quotidien",
+  "$id": "urn:datacontract:import-distribution:stocks-quotidiens:schema",
+  "title": "Ligne de stock quotidien par depot",
   "description": "Validation technique d'une ligne du flux stocks_quotidiens, equivalent JSON Schema du contrat ODCS.",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "date_stock",
     "sku",
-    "site_id",
-    "type_site",
+    "depot_id",
+    "type_depot",
     "quantite_disponible",
     "quantite_reservee",
     "horodatage_maj"
@@ -22,17 +22,17 @@
     },
     "sku": {
       "type": "string",
-      "pattern": "^(CAN|LUM|VAI|TAP|RAN)-[0-9]{5}$",
+      "pattern": "^(CON|AUD|TEL|MON|LED|ELM)-[0-9]{5}$",
       "description": "Reference produit interne."
     },
-    "site_id": {
+    "depot_id": {
       "type": "string",
-      "pattern": "^(MAG|ENT)-[0-9]{3}$",
-      "description": "Identifiant du site."
+      "pattern": "^DEP-[0-9]{3}$",
+      "description": "Identifiant du depot (Ankorondrano, Analakely, Behoririka, Tamatave)."
     },
-    "type_site": {
+    "type_depot": {
       "type": "string",
-      "enum": ["magasin", "entrepot"],
+      "enum": ["central", "boutique", "depot_regional"],
       "description": "Nature du site de stockage."
     },
     "quantite_disponible": {
@@ -45,7 +45,7 @@
       "type": "integer",
       "minimum": 0,
       "maximum": 100000,
-      "description": "Quantite reservee par des commandes clients."
+      "description": "Quantite reservee par des commandes clients ou des transferts."
     },
     "horodatage_maj": {
       "type": "string",
