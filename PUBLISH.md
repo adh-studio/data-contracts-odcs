@@ -4,7 +4,7 @@ Depuis la racine du projet :
 
 ```bash
 gh repo create data-contracts-odcs --public \
-  --description "Data Contracts ODCS v3 executables pour 3 flux Offre et Supply : schema, regles qualite, SLA fraicheur et completude, validateur Python et rapport de conformite" \
+  --description "Data Contracts au standard ODCS v3 pour des flux d'import/distribution : validation de schema, regles qualite, SLA de fraicheur, rapport de conformite" \
   --source . --push
 ```
 
