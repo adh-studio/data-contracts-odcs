@@ -20,7 +20,7 @@ sys.path.insert(0, str(RACINE / "src"))
 
 from validateur import valider_fichier  # noqa: E402
 
-FLUX = ["stocks_quotidiens", "commandes_fournisseurs", "referentiel_produits"]
+FLUX = ["stocks_quotidiens", "lots_import", "referentiel_produits"]
 
 STYLE = """
 :root { color-scheme: light dark; }
@@ -123,13 +123,14 @@ def principal() -> int:
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Rapport de conformite des data contracts ODCS</title>
+<title>Rapport de conformite des data contracts ODCS, import distribution Madagascar</title>
 <style>{STYLE}</style>
 </head>
 <body>
 <header>
   <h1>Rapport de conformite des data contracts</h1>
-  <p>Domaine Offre et Supply · Open Data Contract Standard v3 ·
+  <p>Import et distribution de produits electroniques a Madagascar ·
+     Open Data Contract Standard v3 ·
      genere le {maintenant.strftime('%d/%m/%Y a %H:%M')}</p>
   <div class="resume">
     <div class="pastille"><strong>{total_ok}</strong> regles OK</div>
